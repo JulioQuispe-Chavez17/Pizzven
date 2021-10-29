@@ -1,0 +1,80 @@
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+                template="./admin.xhtml">
+
+
+    <ui:define name="content">
+        <h:form id="frmRegVent" prependId="false">            
+            <p:fieldset legend="Venta" toggleable="true">
+                <p:panelGrid columns="2">
+                    <p:panelGrid columns="2">
+                        <p:outputLabel value="Cliente:"/>
+                        <p:autoComplete value="#{ventaC.modelo.CLIPER}" completeMethod="#{ventaC.autoCompletar}" emptyMessage="No existe" placeholder="Nombre de cliente"
+                                        required="true" resultsMessage="Ingrese el nombre del Cliente"/>
+                        <p:outputLabel value="Vendedor:"/>
+                        <p:autoComplete value="#{ventaC.modelo.VENDPER}" completeMethod="#{ventaC.autoCompletar}" emptyMessage="No existe" placeholder="Nombre de vendedor"
+                                        required="true" resultsMessage="Ingrese el nombre del Vendedor"/>
+                        <p:outputLabel value="Fecha:" />
+                        <p:calendar  placeholder="Fecha" mask="true" id="Fecha"
+                                     value="#{ventaC.modelo.FECVEN}" locale="es"
+                                     navigator="true" yearRange="c-100:c"  pattern="dd-MMM-yyyy"
+                                     required="true" requiredMessage="Ingresar fecha de Venta"
+                                     maxdate="today" showButtonPanel="true" />
+                    </p:panelGrid>
+                    <p:panelGrid columns="2">
+                        <p:outputLabel value="Producto"/>
+                        <p:selectOneMenu value="#{ventaC.detalle.IDPRO}" required="true" requiredMessage="Seleccione una pizza">
+                            <f:selectItem itemValue="" itemLabel="Seleccionar"/>
+                            <f:selectItems value="#{productoC.listado}" var="producto" itemValue="#{producto.IDPRO}" itemLabel="#{producto.NOMPRO} - #{producto.TAMPRO}"/>
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Cantidad"/>
+                        <p:spinner value="#{ventaC.detalle.CANVENDET}" min="1" max="40" onkeypress="return false;"/>
+                    </p:panelGrid>
+                </p:panelGrid>
+                <p:commandButton value="Agregar" actionListener="#{ventaC.agregar()}"  update="frmRegVent frmDataVent"/>
+<!--                <p:commandButton value="Nuevo" actionListener="#{ventaC.nuevo()}"  update="frmRegVent frmDataVent"/>
+                        <p:commandButton value="Anular" actionListener="#{ventaC.eliminarC(venta)}"  update="frmRegVent frmDataVent"/>-->
+            </p:fieldset>
+        </h:form> 
+
+
+
+        <h:form id="frmDataVent">
+            <p:fieldset legend="Datos" toggleable="true">
+                <p:separator/>
+                <p:commandButton value="Registrar" update="frmDataVent frmRegVent" actionListener="#{ventaC.registrar()}" />
+                <p:separator/>
+                <p:dataTable value="#{ventaC.lista}" var="venta">
+                    <f:facet name="header">
+                        -- Detalle de la Venta --
+                    </f:facet>
+                    <p:column headerText="Producto">
+                        <h:outputLabel value="#{venta.IDPRO} #{venta.producto.NOMPRO} - #{producto.TAMPRO}"/>
+                    </p:column>
+                    <p:column headerText="Cantidad">
+                        <h:outputLabel value="#{venta.CANVENDET}"/>
+                    </p:column>
+                    <p:column headerText="Precio">
+                        <h:outputLabel value="s/ #{venta.producto.PRECVENTPRO}">
+                            <f:convertNumber type="currency" currencySymbol="S/" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Total">
+                        <h:outputLabel value="s/ #{venta.producto.PRECVENTPRO * venta.CANVENDET}">
+                            <f:convertNumber type="currency" currencySymbol="S/" />
+                        </h:outputLabel>
+                    </p:column>
+                    <f:facet name="footer">
+                        <h:outputLabel value="SubTotal:   "/>
+                        <h:outputLabel value="s/ #{ventaC.total()}">
+                            <f:convertNumber type="currency" currencySymbol="S/" />
+                        </h:outputLabel>
+                    </f:facet>
+                </p:dataTable>
+            </p:fieldset>
+        </h:form>
+    </ui:define>
+</ui:composition>

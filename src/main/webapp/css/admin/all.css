@@ -1,0 +1,16 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: 'Ronaldo', sans-serif;
+	background: var(--main-bg-color);
+	color: var(--main-color);
+	margin: 0;
+}
+.backgraund .ui-panelgrid{
+    border-style: none !important; 
+    border: none !important;
+    background-color: black !important;
+}
+

@@ -1,0 +1,129 @@
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+                template="./admin.xhtml">
+
+
+     <ui:define name="content">
+        <f:event type="preRenderView" listener="#{productoC.listar()}"/>
+        <h:form id="frmRegPro">
+            <p:fieldset legend="Producto" toggleable="true">
+                <p:commandButton value="Nuevo Producto" oncomplete="PF('wdlgRegPro').show()"/>
+<!--                <p:commandButton value="Generar Reporte" actionListener="#{productoC.descargarPDF()}" ajax="false" icon="pi pi-file"/>-->
+            </p:fieldset>
+        </h:form>
+        <p:dialog id="dlgRegPro" header="Registrar Producto" modal="true" widgetVar="wdlgRegPro" responsive="true" resizable="true" draggable="false">
+            <h:form id="frmPro">
+                <p:panelGrid columns="2">
+                    <p:outputLabel value="Producto"/>
+                    <p:inputText value="#{productoC.modelo.NOMPRO}" required="true" 
+                                requiredMessage="Ingresar el Nombre de la Pizza" maxlength="30">
+                    <p:keyFilter regEx="/[A-Z a-z Ñ_ñ_ _á-é-í-ó-ú]/"/>
+                    </p:inputText>
+                    <p:outputLabel value="Tamaño"/>
+                    <p:selectOneMenu value="#{productoC.modelo.TAMPRO}" required="true"
+                                     requiredMessage="Ingresar el Tamaño de la Pizza">
+                        <f:selectItem itemValue="" itemLabel="Seleccionar"/>
+                        <f:selectItem itemValue="F" itemLabel="Familiar"/>
+                        <f:selectItem itemValue="M" itemLabel="Mediano"/>
+                        <f:selectItem itemValue="P" itemLabel="Personal"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Cantidad:"/>
+                    <p:spinner value="#{productoC.modelo.CANTPRO}" min="1" max="40" onkeypress="return false"
+                               requiredMessage="Ingresar la Cantidad" />
+                    <p:outputLabel value="Precio de Venta:"/>
+                    <p:inputText value="s/ #{productoC.modelo.PRECVENTPRO}" maxlength="8" required="true" size="12"
+                                 requiredMessage="Ingresar el Precio" />
+                </p:panelGrid>
+                <p:commandButton value="Registrar" actionListener="#{productoC.registrar()}" oncomplete="PF('wdlgRegPro').hide()" update="dlgRegPro frmdataPro"/>
+            </h:form>
+
+
+        </p:dialog>
+        <h:form id="frmdataPro">
+            <p:fieldset legend="Datos" toggleable="true">
+                <p:dataTable value="#{productoC.listado}" var="data"
+                             rows="10" paginator="true"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                             rowsPerPageTemplate="5,10,15,20,25,30,35,40">
+                    <f:facet name="header" >
+                        -- Lista de Productos --
+                    </f:facet>
+                    <p:column headerText="ID" filterBy="#{data.IDPRO}" style="width:70px">
+                        <h:outputLabel value="#{data.IDPRO}"/>
+                    </p:column>
+                    <p:column headerText="Producto" filterBy="#{data.NOMPRO}" style="width:400px">
+                        <h:outputLabel value="#{data.NOMPRO}"/>
+                    </p:column>
+                    <p:column headerText="Tamaño" filterBy="#{data.TAMPRO}" style="width:70px">
+                        <h:outputLabel value="#{data.TAMPRO}"/>
+                    </p:column>
+                    <p:column headerText="Cantidad" filterBy="#{data.CANTPRO}" style="width:80px">
+                        <h:outputLabel value="#{data.CANTPRO}"/>
+                    </p:column>
+                    <p:column headerText="Venta" style="width:80px">
+                        <h:outputLabel value="s/ #{data.PRECVENTPRO}"/>
+                    </p:column>
+                    <p:column headerText="Acciones">
+                        <p:commandButton value="Actualizar Stock" icon="ui_icon_trash"
+                                         oncomplete="PF('wdlgUpdPro').show();" 
+                                         update="dlgUpdPro" >
+                            <f:setPropertyActionListener value="#{data}" target="#{productoC.update}" />    
+                        </p:commandButton>   
+                        <p:commandButton value="Ingresar Stock" icon="ui_icon_trash" 
+                                         oncomplete="PF('wdlgRegHist').show();" 
+                                         update="dlgRegHist" >
+                            <f:setPropertyActionListener value="#{data}" target="#{productoC.update}" />    
+                        </p:commandButton>   
+                    </p:column>
+                    <f:facet name="footer">
+                        EN TOTAL HAY #{fn:length(productoC.setListado(data))} REGISTROS.
+                    </f:facet>
+                </p:dataTable>
+            </p:fieldset>
+        </h:form> 
+        
+
+        <p:dialog id="dlgUpdPro" header="Actualizar Stock" modal="true" widgetVar="wdlgUpdPro" responsive="true" resizable="true" draggable="false">
+            <h:form id="frmAct">
+               <p:panelGrid columns="2">
+                    <p:outputLabel value="Producto"/>
+                    <p:inputText value="#{productoC.modelo.NOMPRO}" required="true" 
+                                requiredMessage="Ingresar el Nombre de la Pizza" maxlength="30">
+                    <p:keyFilter regEx="/[A-Z a-z Ñ_ñ_ _á-é-í-ó-ú]/"/>
+                    </p:inputText>
+                    <p:outputLabel value="Tamaño"/>
+                    <p:selectOneMenu value="#{productoC.modelo.TAMPRO}" required="true"
+                                     requiredMessage="Ingresar el Tamaño de la Pizza">
+                        <f:selectItem itemValue="" itemLabel="Seleccionar"/>
+                        <f:selectItem itemValue="F" itemLabel="Familiar"/>
+                        <f:selectItem itemValue="M" itemLabel="Mediano"/>
+                        <f:selectItem itemValue="P" itemLabel="Personal"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel value="Cantidad"/>
+                    <p:spinner value="#{productoC.modelo.CANTPRO}" min="1" max="40" onkeypress="return false"
+                               requiredMessage="Ingresar la Cantidad"/>
+                    <p:outputLabel value="Precio de Venta"/>
+                    <p:inputText value="s/ #{productoC.modelo.PRECVENTPRO}" maxlength="8" required="true" size="12"
+                                 requiredMessage="Ingresar el Precio"/>
+                </p:panelGrid>
+                <p:commandButton value="Registrar" actionListener="#{productoC.editar()}" oncomplete="PF('wdlgUpdPro').hide()" update="frmdataPro dlgUpdPro"/>
+            </h:form>
+
+        </p:dialog>
+        <p:dialog id="dlgRegHist" header="Ingresar Stock" modal="true" widgetVar="wdlgRegHist" responsive="true" resizable="true" draggable="false">
+            <h:form id="frmSto">
+              <p:panelGrid columns="2">
+                    <p:outputLabel value="Producto"/>
+                    <p:inputText value="#{productoC.modelo.NOMPRO}"/>
+                    <p:outputLabel value="Cantidad"/>
+                    <p:spinner value="#{productoC.modelo.CANTPRO}" min="1" max="40" onkeypress="return false"/>
+                </p:panelGrid>
+                <p:commandButton value="Registrar" actionListener="#{productoC.registrarHistoria()}" oncomplete="PF('wdlgRegHist').hide()" update="frmdataPro dlgRegHist"/>
+            </h:form>
+        </p:dialog>
+    </ui:define> 
+</ui:composition>  

@@ -1,0 +1,217 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+                template="./admin.xhtml">
+
+
+  <ui:define name="content">
+        <f:event type="preRenderView" listener="#{personaC.listar()}"/>
+        <h:form id="frmRegPer">
+            <p:fieldset legend="Persona" toggleable="true">
+                <p:commandButton value="Nuevo Registro" oncomplete="PF('wdlgRegPer').show()" icon="ui-icon-plusthick"/>
+            </p:fieldset>
+        </h:form>
+        <p:dialog id="dlgRegPer" header="Registrar Persona" modal="true" widgetVar="wdlgRegPer" responsive="true" resizable="true" draggable="false">
+            <p:growl id="mensaje" severity="info, fatal" showDetail="true" showSummary="true"  />
+            <p:growl id="growl-sticky" for="sticky-key" showDetail="true" sticky="true" />
+
+            <h:form id="frmPer">
+                <p:panelGrid columns="3">
+                    <p:outputLabel for="dni" value="Ingrese DNI" />
+                    <p:commandButton value="Buscar:" action="#{personaC.buscarDNI()}"  update="nombre,apellidos">
+                        <p:inputText id="dni" value="#{personaC.modelo.DNIPER}" maxlength="8"  >
+                            <p:keyFilter regEx="/[0-9]/"/>
+                            <f:validateLength minimum="8" maximum="8"/>
+                        </p:inputText>
+                    </p:commandButton>
+                    <p:message for="dni" display="text" />
+                    <p:outputLabel for="nombre" value="Nombre:" />
+                    <p:inputText  id="nombre"  maxlength="50" value="#{personaC.modelo.NOMPER}" 
+                                  requiredMessage="Ingresar el Nombre">
+                        <f:ajax event="keyup" execute="@this" delay="500"/>
+                        <p:keyFilter regEx="/[A-Z_a-z_ñ_á_é_í_ó_ú_ ]/"/>
+                    </p:inputText>
+                    <p:message for="apellidos" display="text" />
+                    <p:outputLabel for="apellidos" value="Apellidos:"/>
+                    <p:inputText  id="apellidos"  maxlength="50" value="#{personaC.modelo.APEPER}"
+                                  requiredMessage="Ingresar el apellido">
+                        <p:keyFilter regEx="/[A-Z a-z Ñ_ñ_ _á-é-í-ó-ú]/"/>
+                    </p:inputText>
+                    <p:message for="apellidos" display="text" />
+                    <p:outputLabel for="celular" value="Celular:" />
+                    <p:inputText  id="celular" required="true" maxlength="9" value="#{personaC.modelo.CELPER}" 
+                                  requiredMessage="Ingresar el # de Celular" >
+                        <f:ajax event="keyup" execute="@this" delay="500"/>
+                        <p:keyFilter regEx="/[0-9]/"/>
+                        <f:validateLength minimum="9" maximum="9"/>
+                    </p:inputText>
+                    <p:message for="celular" display="text" />
+                    <p:outputLabel for="cargo" value="Cargo:"/>
+                    <p:selectOneMenu id="cargo" value="#{personaC.modelo.TIPPER}" required="true"
+                                     requiredMessage="Ingresar el cargo">
+                        <f:selectItem itemValue="" itemLabel="Seleccionar"/>
+                        <f:selectItem itemValue="A" itemLabel="Administrador"/>
+                        <f:selectItem itemValue="V" itemLabel="Vendedor"/>
+                        <f:selectItem itemValue="R" itemLabel="Repartidor"/>
+                        <f:selectItem itemValue="C" itemLabel="Cliente"/>
+                    </p:selectOneMenu>
+                    <p:message for="cargo" display="text" />
+                    <p:outputLabel for="direcciòn" value="Dirección:"/>
+                    <p:inputText id="direcciòn" required="true" value="#{personaC.modelo.DIRPER}"/>
+                    <p:message for="direcciòn" display="text" />
+                    <p:outputLabel for="Ubigeo" value="Distrito: " /> 
+                    <p:autoComplete style="width: 230px"
+                                    id="Ubigeo" value="#{personaC.modelo.CODUBI}" completeMethod="#{personaC.completeTextUbigeo(query)}"
+                                    minQueryLength="1" required="true"
+                                    requiredMessage="Ingresar el Distrito">
+                        <p:keyFilter regEx="/[A-z, ,´]/" />
+                    </p:autoComplete>
+                    <p:message for="Ubigeo" display="text" />
+                    <h:panelGroup rendered="#{personaC.modelo.TIPPER == ('A' || 'R' || 'V') and personaC.modelo.TIPPER != 'C'}">
+                        <p:inputText value="#{personaC.modelo.TIPPER}" maxlength="10"/>                       
+                    </h:panelGroup>
+                </p:panelGrid>
+                <p:commandButton value="Registrar" actionListener="#{personaC.registrar()}" update="dlgRegPer frmdataPer mensaje" />
+            </h:form>
+
+        </p:dialog>
+        <h:form id="frmdataPer">
+            <p:fieldset legend="Datos" toggleable="true">
+                <p:dataTable  value="#{personaC.lista}" var="data"
+                              rows="10" paginator="true"
+                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                              currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                              rowsPerPageTemplate="5,10,15,20,25,30,35,40">>
+                    <f:facet name="header">
+                        <h:commandLink style="float:right;padding-top: 5px;">
+                            <p:graphicImage url="./../imagen/excel.png" width="36"/>
+                            <p:dataExporter type="xls" target="frmdataPer" fileName="persona" pageOnly="true" />
+                        </h:commandLink>
+                        
+                        <h:commandLink style="float:right;padding-top: 5px;">
+                            <p:graphicImage url="./../imagen/pdf.png" width="36"/>
+                            <p:dataExporter type="pdf" target="frmdataPer" fileName="persona" pageOnly="true" />
+                        </h:commandLink>
+                        
+                        <h:form id="formDescargaPersona">
+                            <p:commandButton value="Exportar Personas" actionListener="#{personaC.reportePersona()}" 
+                                             ajax="false" style="float:right; background-color:yellowgreen;"
+                                             onclick="this.form.target = '_blank'" title="ReportePersona" icon="fa fa-fw fa-download"/>
+                        </h:form>
+                    </f:facet>
+                    <f:facet name= "header"> LISTADO DE LAS PERSONAS </f:facet>
+                    <p:column headerText="ID" sortBy="#{data.IDPER}" filterBy="#{data.IDPER}" style="width:30px">
+                        <h:outputLabel value="#{data.IDPER}"/><!--
+-->                    </p:column>
+                    <p:column headerText="Nombre y Apellidos" sortBy="#{data.NOMPER}" filterBy="#{data.NOMPER}" style="width:250px">
+                        <h:outputLabel value="#{data.NOMPER} #{data.APEPER}"/>
+                    </p:column>
+                    <p:column headerText="DNI" sortBy="#{data.DNIPER}" filterBy="#{data.DNIPER}"  style="width:90px ">
+                        <h:outputLabel value="#{data.DNIPER}"/>
+                    </p:column>
+                    <p:column headerText="Telefono" sortBy="#{data.CELPER}" filterBy="#{data.CELPER}" style="width:90px">
+                        <h:outputLabel value="#{data.CELPER}"/>
+                    </p:column>
+                    <p:column headerText="Cargo" sortBy="#{data.TIPPER}" filterBy="#{data.TIPPER}" style="width:100px ">
+                        <h:outputLabel value="#{data.TIPPER}"> <f:converter converterId="personaConverter" />
+                        </h:outputLabel> 
+                    </p:column>
+                    <p:column headerText="Dirección" sortBy="#{data.DIRPER}" filterBy="#{data.DIRPER}" style="width:150px ">
+                        <h:outputLabel value="#{data.DIRPER}"/>
+                    </p:column>
+                    <p:column headerText="Distrito" sortBy="#{data.CODUBI}" filterBy="#{data.CODUBI}" style="width:120px ">
+                        <h:outputLabel value="#{data.CODUBI}"/>
+                    </p:column>
+                    <p:column headerText="Modificar" exportable="false" >
+                        <center>
+                            <p:commandButton icon="pi pi-id-card" 
+                                             oncomplete="PF('wdlgUpdPer').show();" 
+                                             update=":dlgUpdEmp" >
+                                <f:setPropertyActionListener value="#{data}" target="#{personaC.modelo}" />  
+                            </p:commandButton> 
+                        </center>
+                    </p:column>
+
+                    <p:column headerText="Eliminar" exportable="false">
+                        <center>
+                            <p:commandButton icon="pi pi-times" 
+                                             oncomplete="PF('dlgEliminar').show();"
+                                             update=":dlgEliEmp">
+                                <f:setPropertyActionListener  value="#{data}" target="#{personaC.update}"/>                     
+                            </p:commandButton>
+                        </center>
+                    </p:column>
+                    <f:facet name="footer">
+                        EN TOTAL HAY #{fn: length (personaC.lista)} REGISTROS.
+                    </f:facet>
+
+                </p:dataTable>
+            </p:fieldset>
+        </h:form> 
+
+        <p:dialog id="dlgEliEmp" header="Eliminar Datos" widgetVar="dlgEliminar" showEffect="explode"
+                  hideEffect="explode" modal="true">
+
+            <h:form id="formEliPer" style="font-size: 12px;">            
+                <h:outputText value="Desea eliminar este registro?"/>
+                <p:commandButton value="Si" actionListener="#{personaC.eliminar()}"
+                                 update="frmPer" oncomplete="PF('dlgEliminar').hide();"/>
+                <p:commandButton value="No" onclick="PF('dlgEliminar').hide();"/>
+            </h:form>
+        </p:dialog>
+
+        <!-- Modificaciòn -->
+        <p:dialog id="dlgUpdEmp" header="Modificar Persona" modal="true" widgetVar="wdlgUpdPer" responsive="true" resizable="true" draggable="false">
+            <h:form id="frmUpPer">
+                <p:panelGrid columns="2">
+                    <p:outputLabel value="Nombres:"/>
+                    <p:inputText value="#{personaC.modelo.NOMPER}" maxlength="30" required="true">
+                        <p:keyFilter regEx="/[A-Z a-z Ñ_ñ_ _á-é-í-ó-ú]/"/>
+                    </p:inputText>
+                    <p:outputLabel value="Apellidos:"/>
+                    <p:inputText value="#{personaC.modelo.APEPER}" maxlength="30" required="true">
+                        <p:keyFilter regEx="/[A-Z a-z Ñ_ñ_ _á-é-í-ó-ú]/"/>
+                    </p:inputText>
+                    <p:outputLabel value="DNI:"/>
+                    <p:inputText value="#{personaC.modelo.DNIPER}" maxlength="8" required="true"
+                                 requiredMessage="Ingresar el numero de su DNI">
+                        <p:keyFilter regEx="/[0-8]/"/>
+                    </p:inputText>
+                    <p:outputLabel value="Celular:"/>
+                    <p:inputText value="#{personaC.modelo.CELPER}" maxlength="9" required="true"
+                                 requiredMessage="Ingresar el numero de celular">
+                        <p:keyFilter regEx="/[0-9]/"/>
+                    </p:inputText>
+                    <p:outputLabel value="Cargo:"/>
+                    <p:selectOneMenu value="#{personaC.modelo.TIPPER}" required="true">
+                        <f:selectItem itemValue="" itemLabel="Seleccionar"/>
+                        <f:selectItem itemValue="A" itemLabel="Administrador"/>
+                        <f:selectItem itemValue="V" itemLabel="Vendedor"/>
+                        <f:selectItem itemValue="R" itemLabel="Repartidor"/>
+                        <f:selectItem itemValue="C" itemLabel="Cliente"/>
+                    </p:selectOneMenu>
+                    <p:outputLabel for="direcciòn" value="Dirección:"/>
+                    <p:inputText id="direcciòn" required="true" value="#{personaC.modelo.DIRPER}"/>
+                    <p:message for="direcciòn" display="text" />
+                    <p:outputLabel for="Ubigeo" value="Distrito: " /> 
+                    <p:autoComplete style="width: 230px"
+                                    id="Ubigeo" value="#{personaC.modelo.CODUBI}" completeMethod="#{personaC.completeTextUbigeo(query)}"
+                                    minQueryLength="1" required="true"
+                                    requiredMessage="Ingresar el Distrito">
+                        <p:keyFilter regEx="/[A-z, ,´]/" />
+                    </p:autoComplete>
+                    <p:message for="Ubigeo" display="text" />
+                    <h:panelGroup rendered="#{personaC.modelo.TIPPER == ('A' || 'R' || 'V') and personaC.modelo.TIPPER != 'C'}">
+                        <p:inputText value="#{personaC.modelo.TIPPER}" maxlength="10"/>                       
+                    </h:panelGroup>
+                    <p:outputLabel value=""/>
+                    <p:commandButton value="Modificar" actionListener="#{personaC.modificar()}" update="frmdataPer"
+                                     oncomplete="if(args &amp;&amp; !args.validationFailed) PF('wdlgUpdPer').hide()" />
+                </p:panelGrid>           
+            </h:form>
+        </p:dialog>
+    </ui:define> 
+</ui:composition>   
