@@ -28,7 +28,7 @@ pipeline {
         stage('SonarQube Analysis') {
             agent any
             steps {
-                    sh 'mvn clean verify sonar:sonar -Dsonar.host.url=http://35.222.30.201:9400 -Dsonar.login=941f096e68fd749d9774aefd09939f1db657d184'
+                    sh 'mvn clean verify sonar:sonar -Dsonar.host.url=http://35.222.30.201:9400 -Dsonar.login=5a14b0d5d47a7c7a80925c32643f8a0ff97b23ba'
             }
         }
 
