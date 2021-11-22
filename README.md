@@ -1,1 +1,2 @@
 # Pizzven
+Jenkins + Sonarqube
